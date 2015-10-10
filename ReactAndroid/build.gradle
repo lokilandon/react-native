@@ -23,7 +23,7 @@ task createNativeDepsDirectories {
 
 task downloadBoost(dependsOn: createNativeDepsDirectories, type: Download) {
     // Use ZIP version as it's faster this way to selectively extract some parts of the archive
-    src 'https://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip'
+    src 'https://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.zip'  //C++ 库
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, 'boost_1_57_0.zip')
@@ -37,7 +37,7 @@ task prepareBoost(dependsOn: downloadBoost, type: Copy) {
 }
 
 task downloadDoubleConversion(dependsOn: createNativeDepsDirectories, type: Download) {
-    src 'https://github.com/google/double-conversion/archive/v1.1.1.tar.gz'
+    src 'https://github.com/google/double-conversion/archive/v1.1.1.tar.gz'//浮点型转字符串库，使用了Grisu3算法
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, 'double-conversion-1.1.1.tar.gz')
@@ -53,7 +53,7 @@ task prepareDoubleConversion(dependsOn: downloadDoubleConversion, type: Copy) {
 }
 
 task downloadFolly(dependsOn: createNativeDepsDirectories, type: Download) {
-    src 'https://github.com/facebook/folly/archive/v0.50.0.tar.gz'
+    src 'https://github.com/facebook/folly/archive/v0.50.0.tar.gz'  //facebook 开源的c++ 组件库，用于满足大规模高性能的需求
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, 'folly-0.50.0.tar.gz');
@@ -69,7 +69,7 @@ task prepareFolly(dependsOn: downloadFolly, type: Copy) {
 }
 
 task downloadGlog(dependsOn: createNativeDepsDirectories, type: Download) {
-    src 'https://github.com/google/glog/archive/v0.3.3.tar.gz'
+    src 'https://github.com/google/glog/archive/v0.3.3.tar.gz'   //google 开源日志库
     onlyIfNewer true
     overwrite false
     dest new File(downloadsDir, 'glog-0.3.3.tar.gz')
@@ -170,7 +170,8 @@ def getNdkBuildFullPath() {
     return ndkBuildFullPath
 }
 
-task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog], type: Exec) {
+task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConversion, prepareFolly, prepareGlog],
+        type: Exec) {
     inputs.file('src/main/jni/react')
     outputs.dir("$buildDir/react-ndk/all")
     commandLine getNdkBuildFullPath(),
@@ -181,10 +182,15 @@ task buildReactNdkLib(dependsOn: [prepareJSC, prepareBoost, prepareDoubleConvers
             "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
             '-C', file('src/main/jni/react/jni').absolutePath,
             '--jobs', Runtime.runtime.availableProcessors()
+//    println "configurations.compile"
+//    configurations.compile.resolve().each { println it }
+//    println()
 }
 
 task cleanReactNdkLib(type: Exec) {
     commandLine getNdkBuildFullPath(),
+            "NDK_APPLICATION_MK=$projectDir/src/main/jni/Application.mk",
+            "THIRD_PARTY_NDK_DIR=$buildDir/third-party-ndk",
             '-C', file('src/main/jni/react/jni').absolutePath,
             'clean'
 }
@@ -244,3 +250,8 @@ dependencies {
 
 apply from: 'release.gradle'
 
+
+
+//println "configurations.compile"
+//configurations.compile.resolve().each { println it }
+//println()
